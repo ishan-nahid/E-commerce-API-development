@@ -22,6 +22,6 @@
 
 ## API Endpoints
 
-![APIs](./api_list.png)
+![APIs](api_list.png)
 
 
