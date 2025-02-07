@@ -18,10 +18,10 @@
 
 ## ERD
 
-![ERD](erd.png)
+![ERD](erd.PNG)
 
 ## API Endpoints
 
-![APIs](api_list.png)
+![APIs](./api_list.PNG)
 
 
