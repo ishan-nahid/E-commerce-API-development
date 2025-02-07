@@ -35,11 +35,6 @@ class ProductBase(BaseModel):
     stock: int
     category_id: int
 
-class ProductFilter(BaseModel):
-    category_id: Optional[int] = None
-    min_price: Optional[float] = None
-    max_price: Optional[float] = None
-    in_stock: Optional[bool] = None
 
 class ProductCreate(ProductBase):
     pass

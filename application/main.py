@@ -65,6 +65,22 @@ def read_categories(db: Session = Depends(get_db),
                     current_user: models.User = Depends(auth.get_current_user)):
     return db.query(models.Category).all()
 
+@app.put("/categories/{category_id}", response_model=schemas.Category)
+def update_category(category_id: int,
+                    category: schemas.CategoryCreate,
+                    db: Session = Depends(get_db),
+                    current_user: models.User = Depends(auth.get_current_user)):
+    db_category = db.query(models.Category).filter(models.Category.id == category_id).first()
+    if not db_category:
+        raise HTTPException(status_code=404, detail="Category not found")
+        
+    for key, value in category.dict().items():
+        setattr(db_category, key, value)
+        
+    db.commit()
+    db.refresh(db_category)
+    return db_category
+
 ##############  CATEGORY END ################
 
 
@@ -85,6 +101,34 @@ def read_products(skip: int = 0,
                   db: Session = Depends(get_db)):
     products = db.query(models.Product).offset(skip).limit(limit).all()
     return products
+
+@app.put("/products/{product_id}", response_model=schemas.Product)
+def update_product(product_id: int,
+                   product: schemas.ProductCreate,
+                   db: Session = Depends(get_db),
+                   current_user: models.User = Depends(auth.get_current_user)):
+   db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
+   if not db_product:
+       raise HTTPException(status_code=404, detail="Product not found")
+       
+   for key, value in product.dict().items():
+       setattr(db_product, key, value)
+       
+   db.commit()
+   db.refresh(db_product)
+   return db_product
+
+@app.delete("/products/{product_id}")
+def delete_product(product_id: int,
+                   db: Session = Depends(get_db),
+                   current_user: models.User = Depends(auth.get_current_user)):
+   db_product = db.query(models.Product).filter(models.Product.id == product_id).first()
+   if not db_product:
+       raise HTTPException(status_code=404, detail="Product not found")
+       
+   db.delete(db_product)
+   db.commit()
+   return {"message": "Product deleted successfully"}
 
 
 ##############  PRODUCT END ################
@@ -124,13 +168,13 @@ def add_to_cart(cart_item: schemas.CartItemBase,
     return db_cart_item
 
 
+
 @app.get("/cart", response_model=schemas.CartResponse)
 def view_cart(db: Session = Depends(get_db),
               current_user: models.User = Depends(auth.get_current_user)):
-    cart = db.query(models.Cart).filter(
-        models.Cart.user_id == current_user.id,
-        models.Cart.is_open == True
-    ).first()
+    
+    cart = db.query(models.Cart).filter(models.Cart.user_id == current_user.id,
+                                        models.Cart.is_open == True).first()
     
     if not cart:
         return {
@@ -144,15 +188,16 @@ def view_cart(db: Session = Depends(get_db),
     
     for item in cart.items:
         product = db.query(models.Product).filter(models.Product.id == item.product_id).first()
-        item_total = product.price * item.quantity
-        total_price += item_total
-        items_detail.append({
-            "item_id": item.id,
-            "product_id": product.id,
-            "product_name": product.name,
-            "quantity": item.quantity,
-            "price_per_unit": product.price,
-            "item_total": item_total
+        if product:
+            item_total = product.price * item.quantity
+            total_price += item_total
+            items_detail.append({
+                "item_id": item.id,
+                "product_id": product.id,
+                "product_name": product.name,
+                "quantity": item.quantity,
+                "price_per_unit": product.price,
+                "item_total": item_total
         })
     
     return {
@@ -161,11 +206,6 @@ def view_cart(db: Session = Depends(get_db),
         "total_price": total_price
     }
 
-
-##############  CART END ################
-
-
-##############  ORDER START ################
 
 @app.post("/orders/", response_model=schemas.Order)
 def create_order(db: Session = Depends(get_db),
@@ -183,16 +223,17 @@ def create_order(db: Session = Depends(get_db),
 
     for cart_item in cart.items:
         product = db.query(models.Product).filter(models.Product.id == cart_item.product_id).first()
-        if product.stock < cart_item.quantity:
-            raise HTTPException(status_code=400, detail=f"Not enough stock for product {product.name}")
-        
-        product.stock -= cart_item.quantity
-        total_amount += product.price * cart_item.quantity
-        
-        order_items.append(models.OrderItem(
-            product_id=cart_item.product_id,
-            quantity=cart_item.quantity,
-            price=product.price
+        if product:
+            if product.stock < cart_item.quantity:
+                raise HTTPException(status_code=400, detail=f"Not enough stock for product {product.name}")
+            
+            product.stock -= cart_item.quantity
+            total_amount += product.price * cart_item.quantity
+            
+            order_items.append(models.OrderItem(
+                product_id=cart_item.product_id,
+                quantity=cart_item.quantity,
+                price=product.price
         ))
 
     order = models.Order(
@@ -207,4 +248,3 @@ def create_order(db: Session = Depends(get_db),
     db.refresh(order)
     return order
 
-##############  ORDER END ################

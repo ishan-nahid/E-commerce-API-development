@@ -48,7 +48,7 @@ class Cart(Base):
     is_open = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True)  # One open cart per user
+    user_id = Column(Integer, ForeignKey("users.id"))
     
     user = relationship("User", back_populates="cart")
     
