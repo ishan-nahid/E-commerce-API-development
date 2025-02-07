@@ -18,7 +18,7 @@
 
 ## ERD
 
-![ERD](./erd.png)
+![ERD](erd.png)
 
 ## API Endpoints
 
