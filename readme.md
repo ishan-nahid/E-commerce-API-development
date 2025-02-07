@@ -16,14 +16,12 @@
 - **Authentication**: JWT
 - **Password Hashing**: Passlib
 
+## ERD
+
+![ERD](./erd.png)
 
 ## API Endpoints
 
-- `/register`: User registration
-- `/login`: User authentication
-- `/logout`: Token invalidation
-- `/categories`: Category management
-- `/products`: Product listings
-- `/cart`: Shopping cart operations
-- `/orders`: Order creation
+![APIs](./api_list.png)
+
 

@@ -15,7 +15,6 @@ from fastapi import Depends, HTTPException, status
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-# SECRET_KEY = "af7c1a49ef42b7afea8bd2a3de28b8a03ecb4d859ee4f0dd798fe4d55d8b3c5a" 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
